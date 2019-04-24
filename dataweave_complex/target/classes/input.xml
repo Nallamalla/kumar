@@ -1,0 +1,17 @@
+<employees>
+ <employee>
+  <name>ravi</name>
+  <id>456</id>
+<salary>10000</salary>
+ </employee>
+ <employee>
+  <name>shiva</name>
+  <id>457</id>
+<salary>12000</salary>
+ </employee>
+ <employee>
+  <name>shankar</name>
+  <id>458</id>
+<salary>15000</salary>
+ </employee>
+</employees>

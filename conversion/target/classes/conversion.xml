@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
+    <flow name="conversionFlow">
+        <file:inbound-endpoint path="src/main/resources/input" responseTimeout="10000" doc:name="File"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="47e3f4d7-ec65-4c9b-a6ba-d2888154bb29">
+            <dw:input-payload mimeType="application/xlsx"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	Details: payload.Sheet1 map
+	{
+		ID:$.Id,
+		Name:$.Name,
+		Salary:$.Salary,
+		Dept:$.Dept,
+		Address:$.Address 
+	}
+	}]]></dw:set-payload>
+        </dw:transform-message>
+        <file:outbound-endpoint path="src/main/resources/output" outputPattern="#[message.inboundProperties.originalFilename].json" responseTimeout="10000" doc:name="File"/>
+    </flow>
+    <flow name="conversionFlow1">
+        <file:inbound-endpoint path="C:\Users\siva\Desktop\Input" responseTimeout="10000" doc:name="File"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="1ddf5b71-f112-40f8-a63e-37d2faa7c8b7">
+            <dw:input-payload mimeType="application/json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xlsx
+---
+{
+	Sheet1: payload.Details map ((detail , indexOfDetail) -> using (parts * detail.Address splitBy ',') {
+		Id: detail.ID as :string,
+		Name: detail.Name,
+		Salary: detail.Salary as :string,
+		Dept: detail.Dept,
+		Address: parts[0],
+		City: parts[1],
+		State: parts[2],
+		Country: parts[3],
+		Zipcode: parts[4]
+		
+	})
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <file:outbound-endpoint path="C:\Users\siva\Desktop\Output" outputPattern="emp.xslx" responseTimeout="10000" doc:name="File"/>
+    </flow>
+</mule>

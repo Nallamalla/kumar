@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" basePath="transformer" doc:name="HTTP Listener Configuration"/>
+    <flow name="mule-dataweavFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/invoke" allowedMethods="POST" doc:name="HTTP"/>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="b40ac828-c3ef-42c6-8852-e7a22598b9e2">
+            <dw:input-payload mimeType="application/xml" doc:sample="input.xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.employees.*employee map ((employee , indexOfEmployee) -> {
+	empName: employee.name,
+	empId: employee.id as :string
+})]]></dw:set-payload>
+        </dw:transform-message>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="mule-dataweavFlow1">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/java" doc:name="HTTP"/>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="b40ac828-c3ef-42c6-8852-e7a22598b9e2">
+            <dw:input-payload mimeType="application/xml" doc:sample="input.xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+	listOfEmployee: payload.employees.*employee map ((employee , indexOfEmployee) -> {
+		id: employee.id,
+		name: employee.name
+		
+	})
+} as :object {
+	class : "com.imt.transformer.Employees"
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <component class="com.comp.MyComponent" doc:name="Java"/>
+        <logger level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload]]></dw:set-payload>
+        </dw:transform-message>
+        
+    </flow>
+</mule>

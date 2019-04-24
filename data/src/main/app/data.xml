@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" basePath="discount" doc:name="HTTP Listener Configuration"/>
+    <cxf:configuration name="CXF_Configuration" enableMuleSoapHeaders="true" initializeStaticBusInstance="true" doc:name="CXF Configuration"/>
+    <ws:consumer-config name="Web_Service_Consumer" wsdlLocation="discount.wsdl" service="PriceService" port="PricePort" serviceAddress="http://localhost:8081/discount/price" doc:name="Web Service Consumer"/>
+    <flow name="mule-percentageFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/price" doc:name="HTTP"/>
+        <cxf:jaxws-service configuration-ref="CXF_Configuration" service="com.imt.java.Finalprice" serviceClass="com.imt.java.Price" doc:name="CXF"/>
+        <component class="com.imt.java.Price" doc:name="Java"/>
+    </flow>
+    <flow name="mule-percentageFlow1">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/discount" allowedMethods="POST" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="3f0110c0-bc7f-4e69-90c3-42184ae44710">
+            <dw:input-payload mimeType="application/json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+%namespace ns0 http://java.imt.com/
+---
+{
+	ns0#getDiscountedPrice: {
+		totalAmount: payload.totalprice,
+		discountRate: payload.discountRate
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <ws:consumer config-ref="Web_Service_Consumer" operation="getDiscountedPrice" doc:name="Web Service Consumer"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="6680798d-8a50-4267-a204-8bb6ea8b48ee">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+%namespace ns0 http://java.imt.com/
+---
+{
+	actualitemprice: payload.ns0#getDiscountedPriceResponse.return
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

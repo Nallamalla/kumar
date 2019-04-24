@@ -1,0 +1,25 @@
+{
+"Details": [
+    {
+      "ID": 101.0,
+      "Name": "siva",
+      "Salary": 5000.0,
+      "Dept": "IT",
+      "Address": "Tavarekare,Bangalore,KA,India,510234"
+    },
+    {
+      "ID": 102.0,
+      "Name": "Kumar",
+      "Salary": 10000.0,
+      "Dept": "Service",
+      "Address": "Maruthalli,Bangalore,KA,India,510237"
+    },
+    {
+      "ID": 103.0,
+      "Name": "Reddy",
+      "Salary": 15000.0,
+      "Dept": "BPO",
+      "Address": "Kphp,Hyderabad,AP,India,510239"
+    }
+  ]
+}
