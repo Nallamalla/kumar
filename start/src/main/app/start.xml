@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     <flow name="startFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/one" doc:name="HTTP"/>
-        <set-payload value="#['Fant']" doc:name="Set Payload"/>
+        <set-payload value="#['Fant1']" doc:name="Set Payload"/>
     </flow>
     <sub-flow name="construct-final-response">
         <dw:transform-message doc:name="Transform Message" metadata:id="1f5f3a36-124e-4222-ada1-67cd0b46abb9">
